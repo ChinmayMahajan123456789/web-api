@@ -1,0 +1,56 @@
+name: Continous Integration and Continous Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+env: 
+  DOTNET-VERSION: '6.0.X'
+  AZURE_WEBAPP_PUBLISH_PROFILE: 'test-github-action-workflow'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+
+    - name: checkout code
+      uses: actions/checkout@v2
+
+    - name: dotnet setup
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET-VERSION }}
+
+    - name: dotnet restore
+      run: dotnet restore 
+
+    - name: build the app
+      run: dotnet build -c Release --no-restore
+
+    - name: publish
+      run: dotnet publish -c Release -o ${{ env.DOTNET_ROOT }}/myapp
+
+    - name: upload the artifact for deploymet job
+      uses: actions/upload@v2
+      with:
+        name: .net-app
+        path: ${{ env.DOTNET_ROOT }}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: download aetifact from build jobs
+        uses: actios/download-artifact@v2
+        with:
+          name: .net-app
+
+      - name: deploy ro azure web app
+        uses: azure/webapp-deploy@v2
+        with:
+          app-name: ${{ AZURE-WEBAPP-NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+
+    
