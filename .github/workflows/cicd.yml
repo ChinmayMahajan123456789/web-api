@@ -7,6 +7,7 @@ on:
 
 env: 
   DOTNET-VERSION: '6.0.X'
+  AZURE_WEBAPP_NAME: 'test-github-action-workflow'
   
 jobs:
   build:
@@ -39,9 +40,7 @@ jobs:
   deploy:
     runs-on: windows-latest
     needs: build
-    env:
-      AZURE_WEBAPP_NAME: 'test-github-action-workflow'
-
+          
     steps:
       - name: download aetifact from build jobs
         uses: actios/download-artifact@v2
