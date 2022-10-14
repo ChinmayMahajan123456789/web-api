@@ -10,6 +10,7 @@ on:
 env: 
   DOTNET_VERSION: '6.0.x'
   AZURE_WEBAPP_NAME: test-github-action-workflow
+  AZURE_WEBAPP_PACKAGE_PATH: '.'
     
 jobs:
   build:
@@ -30,7 +31,18 @@ jobs:
         run: dotnet build -c Release --no-restore
 
       - name: publish app
-        run: dotnet publish -c Release -o ./publish
+        run: dotnet publish -c Release -o ${{ env.DOTNET_ROOT }}/myapp
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v3
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: .net-app
 
       - name: Deploy the app
         uses: azure/webapps-deploy@v2
